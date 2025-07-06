@@ -1,0 +1,15 @@
+github_organization_members:
+  # Platform Team Members
+  - name: Platform Admin
+    github-role: member
+    github-username: platform-admin
+    email: platform-admin@myplatform.com
+
+github_repositories:
+  # Chapter 1 Repos
+  - name: platform-team-admin
+    description: Repository to manage platform team membership and admin artifacts
+  - name: platform-core
+    description: Core platform runtime
+  - name: platform-demo-apps
+    description: Demo application for testing the platform

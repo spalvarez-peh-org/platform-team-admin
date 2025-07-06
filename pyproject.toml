@@ -1,0 +1,12 @@
+[project]
+name = "platform-team-admin"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pulumi>=3.0.0,<4.0.0",
+    "pulumi-bitwarden",
+    "pulumi-github>=4.0.0,<5.0.0",
+]
+
+[tool.uv.sources]
+pulumi-bitwarden = { path = "sdks/bitwarden" }

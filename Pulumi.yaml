@@ -1,0 +1,12 @@
+name: platform-team-admin
+description: Repository to manage platform team administration functions and artifacts
+runtime:
+  name: python
+  options:
+    toolchain: uv
+packages:
+  bitwarden:
+    source: terraform-provider
+    version: 0.12.0
+    parameters:
+      - maxlaverse/bitwarden
