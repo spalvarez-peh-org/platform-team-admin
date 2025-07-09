@@ -24,20 +24,20 @@ with open("config/platform_team_values.yaml", "r") as f:
     org_id = os.getenv("BW_ORG_ID")
 
     #Ensure platform team membership
-    # for platform_members in data.get("github_organization_members", []):
-    #     name = platform_members.get("name")
-    #     username = platform_members.get("github-username")
-    #     role = platform_members.get("github-role", "member")
-    #     email = platform_members.get("email")
+    for platform_members in data.get("github_organization_members", []):
+        name = platform_members.get("name")
+        username = platform_members.get("github-username")
+        role = platform_members.get("github-role", "member")
+        email = platform_members.get("email")
         
-    #     # Create a GitHub team member
-    #     team_member = github.Membership(f"github_membership_for_{name}",
-    #         username = f"{username}",
-    #         role = f"{role}"
-    #     )
+        # Create a GitHub team member
+        team_member = github.Membership(f"github_membership_for_{name}",
+            username = f"{username}",
+            role = f"{role}"
+        )
 
-    #     # Export the username of the team member
-    #     pulumi.export(f'{username}-github', team_member.username)
+        # Export the username of the team member
+        pulumi.export(f'{username}-github', team_member.username)
 
     # Create each repository
     for repo in data.get("github_repositories", []):
@@ -46,9 +46,35 @@ with open("config/platform_team_values.yaml", "r") as f:
         
         # Create a GitHub repository
         repository = github.Repository(f"{name}", 
-        name=name,
-        description=f"{description}"
+            name=name,
+            description=f"{description}",
+            visibility="private",
+            opts=pulumi.ResourceOptions(protect=True)
         )
 
         # Export the Name of the repository
         pulumi.export(f'{name}-repository', repository.name)
+
+        # Apply any repository rulesets
+        #ApplyRepositoryRulesets(repository.Name)
+
+# def ApplyRepositoryRulesets(repo_name):
+#     # Create a GitHub repository ruleset
+#     github.RepositoryRuleset(f"{repo_name}-ruleset",
+#         enforcement="active",
+#         rules={
+#             "commit_message_pattern": {
+#                 "operator": "string",
+#                 "pattern": "string",
+#                 "name": "string",
+#                 "negate": False,
+#             },
+#             "tag_name_pattern": {
+#             "operator": "string",
+#             "pattern": "string",
+#             "name": "string",
+#             "negate": False,
+#         },
+#         },
+        
+#     )

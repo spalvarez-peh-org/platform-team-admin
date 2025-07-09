@@ -4,3 +4,4 @@
 secrets/*.json
 sdks/
 
+config/circleci_values.yaml

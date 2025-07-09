@@ -1,9 +1,9 @@
 github_organization_members:
   # Platform Team Members
-  - name: Platform Admin
+  - name: Platform Team
     github-role: member
-    github-username: platform-admin
-    email: platform-admin@myplatform.com
+    github-username: salvarez-platformteam
+    email: alvarezseanp+peh-platformteam@gmail.com
 
 github_repositories:
   # Chapter 1 Repos
