@@ -4,6 +4,9 @@ set -euo pipefail
 # 🏷️ Default action
 ACTION="up"
 
+#Default stack
+PULUMI_STACK="dev"
+
 # Parse optional --action flag
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -59,7 +62,9 @@ bw logout --quiet
 
 echo "GitHub secrets loaded into environment variables"
 
-pulumi stack select dev
+uv pip install -r requirements.txt --python=$(which python3)
+source .venv/bin/activate
+pulumi stack select $PULUMI_STACK
 
 # Run Pulumi with specified action
 case "$ACTION" in
