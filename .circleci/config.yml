@@ -25,7 +25,7 @@ jobs:
           name: Log into Bitwarden using API key
           command: |
             echo "Logging into Bitwarden..."
-            bw login --apikey --quiet
+            bw login --apikey
 
       - run:
           name: Unlock Bitwarden Vault
