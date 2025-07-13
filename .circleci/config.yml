@@ -2,8 +2,7 @@ version: 2.1
 
 executors:
   pulumi-runner:
-    docker:
-      - image: pulumi/pulumi:latest
+    machine: true
     resource_class: peh_runner/local_laptop_runner
 
 jobs:
