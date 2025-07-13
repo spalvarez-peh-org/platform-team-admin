@@ -2,8 +2,10 @@ version: 2.1
 
 executors:
   pulumi-runner:
-    machine: true
+    machine: 
+      image: ubuntu-2204:current
     resource_class: peh_runner/local_laptop_runner
+    working_directory: ~/project
 
 jobs:
   run-pulumi-script:
