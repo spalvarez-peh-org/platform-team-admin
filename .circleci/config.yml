@@ -1,39 +1,28 @@
 version: 2.1
 
 executors:
-  local-machine:
+  pulumi-runner:
+    docker:
+      - image: pulumi/pulumi:latest
     machine: true
     resource_class: peh_runner/local_laptop_runner
 
 jobs:
-  setup-kind-cluster:
-    executor: local-machine
+  run-pulumi-script:
+    executor: pulumi-runner
+    working_directory: ~/project
     steps:
       - checkout
 
       - run:
-          name: Create Kind cluster
-          command: |
-            echo "PATH is: $PATH"
-            if ! kind get clusters | grep -q circleci-kind; then
-              kind create cluster --name circleci-kind
-            else
-              echo "Kind cluster already exists"
-            fi
+          name: Ensure script is executable
+          command: chmod +x ./deploy_scripts/deploy.sh
 
       - run:
-          name: Validate Kind cluster
-          command: |
-            kubectl cluster-info --context kind-circleci-kind
-            kubectl get nodes
-
-      # - run:
-      #     name: Delete Kind cluster
-      #     when: always
-      #     command: |
-      #       kind delete cluster --name circleci-kind
+          name: Run Pulumi with --action=preview
+          command: ./deploy_scripts/deploy.sh --action=preview
 
 workflows:
-  test-with-kind:
+  pulkumi-preview:
     jobs:
-      - setup-kind-cluster
+      - run-pulumi-script
