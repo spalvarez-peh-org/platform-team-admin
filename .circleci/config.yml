@@ -27,4 +27,16 @@ jobs:
 
       - run:
           name: Run your tests
-          command
+          command: |
+            echo "Run tests here (kubectl apply, helm test, etc.)"
+
+      - run:
+          name: Delete Kind cluster
+          when: always
+          command: |
+            kind delete cluster --name circleci-kind
+
+workflows:
+  test-with-kind:
+    jobs:
+      - setup-kind-cluster
