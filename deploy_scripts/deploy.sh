@@ -36,7 +36,7 @@ done
 : "${BW_PASSWORD:?BW_PASSWORD must be set}"
 
 echo "Ensure bw is logged out"
-bw logout
+bw logout || true
 
 echo "Logging into Bitwarden..."
 bw login --apikey
