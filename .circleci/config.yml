@@ -14,6 +14,7 @@ jobs:
       - run:
           name: Create Kind cluster
           command: |
+            echo "PATH is: $PATH"
             if ! kind get clusters | grep -q circleci-kind; then
               kind create cluster --name circleci-kind
             else
