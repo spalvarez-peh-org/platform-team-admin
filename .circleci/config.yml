@@ -1,12 +1,9 @@
 version: 2.1
 
-executors:
-  local-kind:
-    type: local
-
 jobs:
   setup-kind-cluster:
-    executor: local-kind
+    machine: true
+    resource_class: peh_runner/container_local
     steps:
       - checkout
 
