@@ -20,7 +20,7 @@ jobs:
             echo "🧹 Cleaning up old Bitwarden CLI session"
             bw logout || echo "No active session"
             rm -rf ~/Library/Application\ Support/Bitwarden\ CLI/
-            eexport BW_SESSION=""
+            export BW_SESSION=""
 
       - run:
           name: Log into Bitwarden using API key
