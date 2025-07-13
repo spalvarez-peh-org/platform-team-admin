@@ -35,6 +35,8 @@ done
 : "${BW_CLIENTSECRET:?BW_CLIENTSECRET must be set}"
 : "${BW_PASSWORD:?BW_PASSWORD must be set}"
 
+echo "Ensure bw is logged out"
+bw logout
 
 echo "Logging into Bitwarden..."
 bw login --apikey
@@ -56,6 +58,8 @@ export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulu
 bw logout --quiet
 
 echo "GitHub secrets loaded into environment variables"
+
+pulumi stack select dev
 
 # Run Pulumi with specified action
 case "$ACTION" in

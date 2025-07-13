@@ -21,5 +21,5 @@ circleci context create --org-id "${CCI_ORG_ID}" "${CONTEXT_NAME}"
 while IFS='=' read -r key val; do
   [[ -z "$key" ]] && continue
   echo "Adding $key"
-  circleci context store-secret --org-id ${CCI_ORG_ID} ${CONTEXT_NAME} $key <<< "$val"
+  echo -n "$val" | circleci context store-secret --org-id ${CCI_ORG_ID} ${CONTEXT_NAME} $key
 done < <(grep -v '^#' "$ENV_FILE")
