@@ -2,7 +2,8 @@ version: 2.1
 
 jobs:
   setup-kind-cluster:
-    machine: true
+    docker:
+      - image: cimg/base:current
     resource_class: peh_runner/container_local
     steps:
       - checkout
