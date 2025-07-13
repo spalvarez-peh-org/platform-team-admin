@@ -18,6 +18,7 @@ jobs:
           name: Ensure Bitwarden is logged out
           command: |
             bw logout || echo "No active session"
+            rm -rf ~/.config/Bitwarden\ CLI/
 
       - run:
           name: Log into Bitwarden using API key
