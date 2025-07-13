@@ -56,8 +56,17 @@ jobs:
             python3 -m venv .venv
             source .venv/bin/activate
             uv pip install -r requirements.txt
+            which python3
+            python3 -m pip show pulumi || echo "Pulumi not found"
             echo "PULUMI_PYTHON_CMD=$(pwd)/.venv/bin/python" >> $BASH_ENV
 
+      - run:
+          name: Show Python used by Pulumi
+          command: |
+            source $BASH_ENV
+            echo "PULUMI_PYTHON_CMD=$PULUMI_PYTHON_CMD"
+            $PULUMI_PYTHON_CMD -m pip show pulumi || echo "Pulumi not found"
+            
       - run:
           name: Select Pulumi stack and preview
           command: |
