@@ -15,10 +15,11 @@ jobs:
       - checkout
 
       - run:
-          name: Ensure Bitwarden is logged out
+          name: Wipe Bitwarden CLI config and sessions
           command: |
-            bw logout || echo "No active session"
-            rm -rf ~/.config/Bitwarden\ CLI/
+            echo "🧹 Cleaning up old Bitwarden CLI session"
+            rm -rf ~/.config/Bitwarden\ CLI
+            export BW_SESSION=""
 
       - run:
           name: Log into Bitwarden using API key
@@ -36,7 +37,7 @@ jobs:
           name: Load GitHub secrets from Bitwarden
           command: |
             source $BASH_ENV
-            ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
+            ITEM_JSON=$(timeout 15s bw get item "GitHub Secrets" --session "$BW_SESSION")
 
             export GITHUB_TOKEN=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-token") | .value')
             export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
