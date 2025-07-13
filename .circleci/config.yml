@@ -18,7 +18,7 @@ jobs:
 
       - run:
           name: Run Pulumi with --action=preview
-          command: ./deploy_scripts/deploy.sh --action=preview
+          command: ./deploy_scripts/deploy.sh --action preview
 
 workflows:
   pulkumi-preview:
