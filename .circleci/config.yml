@@ -23,4 +23,5 @@ jobs:
 workflows:
   pulkumi-preview:
     jobs:
-      - run-pulumi-script
+      - run-pulumi-script:
+          context: PLATFORM_ADMIN
