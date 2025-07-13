@@ -19,16 +19,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Load .env before accessing any env vars
-ENV_FILE=".env"
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo ".env file not found at $ENV_FILE"
-  exit 1
-fi
+# ENV_FILE=".env"
+# if [[ ! -f "$ENV_FILE" ]]; then
+#   echo ".env file not found at $ENV_FILE"
+#   exit 1
+# fi
 
-# Load secrets from env file
-set -o allexport
-source "$ENV_FILE"
-set +o allexport
+# # Load secrets from env file
+# set -o allexport
+# source "$ENV_FILE"
+# set +o allexport
 
 # Ensure Bitwarden credentials are set
 : "${BW_CLIENTID:?BW_CLIENTID must be set}"

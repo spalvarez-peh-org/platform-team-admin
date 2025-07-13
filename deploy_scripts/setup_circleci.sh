@@ -1,10 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-#Init circleci project
+CCI_ORG_ID="$1"
+CONTEXT_NAME=PLATFORM_ADMIN
 
-#Create pipeline and trigger
+# Load .env before accessing any env vars
+ENV_FILE=".env"
+if [[ ! -f "${ENV_FILE}" ]]; then
+  echo ".env file not found at $ENV_FILE"
+  exit 1
+fi
 
-#Log into BW and get Pulumi API Key
+# Load secrets from env file
+set -o allexport
+source "${ENV_FILE}"
+set +o allexport
 
-#Set as pipeline secret env variable
+circleci context create --org-id "${CCI_ORG_ID}" "${CONTEXT_NAME}"
+
+while IFS='=' read -r key val; do
+  [[ -z "$key" ]] && continue
+  echo "Adding $key"
+  circleci context store-secret --org-id ${CCI_ORG_ID} ${CONTEXT_NAME} $key <<< "$val"
+done < <(grep -v '^#' "$ENV_FILE")

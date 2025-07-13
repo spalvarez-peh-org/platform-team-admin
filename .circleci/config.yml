@@ -13,20 +13,11 @@ jobs:
       - checkout
 
       - run:
-          name: Debug directory structure
-          command: |
-            echo "PWD: $(pwd)"
-            echo "Listing project files:"
-            ls -al
-            echo "Looking for .env..."
-            cat .env || echo "Not found"
-
-      - run:
           name: Ensure script is executable
           command: chmod +x ./deploy_scripts/deploy.sh
 
       - run:
-          name: Run Pulumi with --action=preview
+          name: Run Pulumi with --action preview
           command: ./deploy_scripts/deploy.sh --action preview
 
 workflows:
