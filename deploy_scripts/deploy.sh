@@ -1,18 +1,30 @@
 #!/bin/bash
 set -euo pipefail
 
-# 🏷️ Default action
+VERBOSE=false
+# Default action
 ACTION="up"
-
 #Default stack
 PULUMI_STACK="dev"
 
-# Parse optional --action flag
+#parse optional flags
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --action)
       ACTION="$2"
       shift 2
+      ;;
+    --stack)
+      PULUMI_STACK="$2"
+      shift 2
+      ;;
+    --verbose)
+      VERBOSE=true
+      shift
+      ;;
+    --help|-h)
+      echo "Usage: $0 [--action up|destroy|preview] [--stack dev|prod] [--verbose]"
+      exit 0
       ;;
     *)
       echo "Unknown argument: $1"
@@ -21,28 +33,42 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Load .env before accessing any env vars
-# ENV_FILE=".env"
-# if [[ ! -f "$ENV_FILE" ]]; then
-#   echo ".env file not found at $ENV_FILE"
-#   exit 1
-# fi
+if [[ "$VERBOSE" == true ]]; then
+  set -x
+fi
 
-# # Load secrets from env file
-# set -o allexport
-# source "$ENV_FILE"
-# set +o allexport
+# Ensure required commands are available
+for cmd in jq bw pulumi uv; do
+  if ! command -v "$cmd" &> /dev/null; then
+    echo "Error: $cmd is not installed or not in PATH."
+    exit 1
+  fi
+done
+
+# Load .env before accessing any env vars
+ENV_FILE=".env"
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo ".env file not found at $ENV_FILE"
+  exit 1
+fi
+
+# Load secrets from env file
+set -o allexport
+source "$ENV_FILE"
+set +o allexport
 
 # Ensure Bitwarden credentials are set
 : "${BW_CLIENTID:?BW_CLIENTID must be set}"
 : "${BW_CLIENTSECRET:?BW_CLIENTSECRET must be set}"
 : "${BW_PASSWORD:?BW_PASSWORD must be set}"
 
-echo "Ensure bw is logged out"
-bw logout || true
+if bw status | grep -q '"status": "unlocked"'; then
+  echo "🔒 Bitwarden already unlocked. Logging out to start fresh..."
+  bw logout
+fi
 
 echo "Logging into Bitwarden..."
-bw login --apikey
+bw login --apikey -quiet
 
 echo "Unlocking vault..."
 BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
@@ -58,12 +84,15 @@ ITEM_JSON=$(bw get item "$ITEM_NAME" --session "$BW_SESSION")
 export GITHUB_TOKEN=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-token") | .value')
 export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
 
-bw logout --quiet
-
 echo "GitHub secrets loaded into environment variables"
 
-uv pip install -r requirements.txt --python=$(which python3)
+if [[ ! -d ".venv" ]]; then
+  echo "Creating virtual environment..."
+  uv venv .venv
+fi
+
 source .venv/bin/activate
+uv pip install -r requirements.txt
 pulumi stack select $PULUMI_STACK
 
 # Run Pulumi with specified action
