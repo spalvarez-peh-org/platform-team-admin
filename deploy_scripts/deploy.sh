@@ -37,7 +37,7 @@ done
 
 
 echo "Logging into Bitwarden..."
-bw login --apikey --quiet
+bw login --apikey
 
 echo "Unlocking vault..."
 BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
