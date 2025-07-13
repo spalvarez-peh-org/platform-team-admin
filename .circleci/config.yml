@@ -31,6 +31,7 @@ jobs:
       - run:
           name: Unlock Bitwarden Vault
           command: |
+            source $BASH_ENV
             export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
             echo "export BW_SESSION=$BW_SESSION" >> $BASH_ENV
 
