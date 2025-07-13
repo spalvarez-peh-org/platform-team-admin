@@ -56,9 +56,14 @@ jobs:
             python3 -m venv .venv
             source .venv/bin/activate
             uv pip install -r requirements.txt
+            echo "PULUMI_PYTHON_CMD=$(pwd)/.venv/bin/python" >> $BASH_ENV
+
+      - run:
+          name: Select Pulumi stack and preview
+          command: |
+            source $BASH_ENV
             pulumi stack select "$PULUMI_STACK"
             pulumi preview
-            
           
 workflows:
   preview:
