@@ -2,17 +2,24 @@ version: 2.1
 
 executors:
   pulumi-runner:
-    machine: 
-      image: ubuntu-2204:current
+    machine: true
     resource_class: peh_runner/local_laptop_runner
     working_directory: ~/project
 
 jobs:
   run-pulumi-script:
     executor: pulumi-runner
-    working_directory: ~/project
     steps:
       - checkout
+
+      - run:
+          name: Debug directory structure
+          command: |
+            echo "PWD: $(pwd)"
+            echo "Listing project files:"
+            ls -al
+            echo "Looking for .env..."
+            cat .env || echo "Not found"
 
       - run:
           name: Ensure script is executable
