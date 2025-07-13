@@ -1,45 +1,30 @@
 version: 2.1
-orbs:
-  pulumi: pulumi/pulumi@2.1.0
-  node: circleci/node@5.0.0
+
+executors:
+  local-kind:
+    type: local
+
 jobs:
-  build:
-    docker:
-      - image: cimg/node:17.5.0
+  setup-kind-cluster:
+    executor: local-kind
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: false
-      - pulumi/login:
-          access-token: ${PULUMI_ACCESS_TOKEN}
-      - pulumi/preview:
-          stack: ${CIRCLE_PROJECT_USERNAME}/dev
-          working_directory: ~/project/platform-team-admin
-  deploy:
-    docker:
-      - image: cimg/node:17.5.0
-    steps:
-      - checkout
-      - pulumi/login:
-          access-token: ${PULUMI_ACCESS_TOKEN}
-      - node/install-packages:
-          app-dir: ~/project/platform-team-admin
-      - pulumi/update:
-          stack: ${CIRCLE_PROJECT_USERNAME}/circleci-pulumi/dev
-          working_directory: ~/project/platform-team-admin
-workflows:
-  version: 2.1
-  pulumi-deploy:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - main
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only:
-                - main
+
+      - run:
+          name: Create Kind cluster
+          command: |
+            if ! kind get clusters | grep -q circleci-kind; then
+              kind create cluster --name circleci-kind
+            else
+              echo "Kind cluster already exists"
+            fi
+
+      - run:
+          name: Validate Kind cluster
+          command: |
+            kubectl cluster-info --context kind-circleci-kind
+            kubectl get nodes
+
+      - run:
+          name: Run your tests
+          command
