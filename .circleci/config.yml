@@ -32,31 +32,19 @@ jobs:
           command: |
             echo "Logging into Bitwarden..."
             bw login --apikey
-
-      - run:
-          name: Debug env var before bw unlock
-          command: |
-            echo "🔐 BW_PASSWORD length: ${#BW_PASSWORD}"
-            echo "${BW_PASSWORD:0:4}****"
-
-      - run:
-          name: Unlock Bitwarden Vault
-          command: |
-            export BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
+            
+            echo "Unlock BW session"
+            export BW_SESSION=$(bw unlock $BW_PASSWORD --raw)
             echo "export BW_SESSION=$BW_SESSION" >> $BASH_ENV
 
-      - run:
-          name: Load GitHub secrets from Bitwarden
-          command: |
-            source $BASH_ENV
-            ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
+            echo "get GitHub Secrets from Vault"
 
+            ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
             export GITHUB_TOKEN=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-token") | .value')
             export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
-
             echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
-
+            
       - pulumi/login
 
       - python/install-packages:
