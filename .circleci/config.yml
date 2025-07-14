@@ -36,7 +36,8 @@ jobs:
             
             echo "BW_SESSION is: $BW_SESSION"
             echo "Unlock BW session"
-            export BW_SESSION=$(bw unlock $BW_PASSWORD --raw)
+            bw unlock ${BW_PASSWORD}
+            export BW_SESSION=$(bw unlock ${BW_PASSWORD} --raw)
             echo "BW_SESSION is: $BW_SESSION"
 
             echo "Get GitHub Secrets from Vault"
