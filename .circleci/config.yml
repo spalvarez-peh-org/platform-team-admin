@@ -1,9 +1,8 @@
 version: 2.1
 
 orbs:
-  pulumi: pulumi/pulumi@1.0.0
+  pulumi: pulumi/pulumi@2.1.0
   python: circleci/python@3.1.0
-  ci-bitwarden: cricbuzz/ci-bitwarden@1.0.6
 executors:
   local-machine:
     machine: true
