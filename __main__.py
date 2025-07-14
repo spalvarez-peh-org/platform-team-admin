@@ -20,9 +20,6 @@ provider = github.Provider("custom-github-provider",
 with open("config/platform_team_values.yaml", "r") as f:
     data = yaml.safe_load(f)
 
-    # Load the BitWarden organization ID from the environment variable
-    org_id = os.getenv("BW_ORG_ID")
-
     #Ensure platform team membership
     for platform_members in data.get("github_organization_members", []):
         name = platform_members.get("name")
