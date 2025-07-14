@@ -22,7 +22,8 @@ jobs:
       - run:
           name: Wipe Bitwarden CLI config and sessions
           command: |
-            echo "🧹 Cleaning up old Bitwarden CLI session"
+            echo "Cleaning up old Bitwarden CLI session"
+            bw lock || echo "Vault already locked"
             bw logout || echo "No active session"
             rm -rf ~/Library/Application\ Support/Bitwarden\ CLI/
             export BW_SESSION=""
@@ -37,7 +38,7 @@ jobs:
             export BW_SESSION=$(bw unlock $BW_PASSWORD --raw)
             echo "export BW_SESSION=$BW_SESSION" >> $BASH_ENV
 
-            echo "get GitHub Secrets from Vault"
+            echo "Get GitHub Secrets from Vault"
 
             ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
             export GITHUB_TOKEN=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-token") | .value')
