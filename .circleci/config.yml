@@ -1,5 +1,9 @@
 version: 2.1
 
+orbs:
+  pulumi: pulumi/pulumi@1.0.0
+  python: circleci/python@3.1.0
+  ci-bitwarden: cricbuzz/ci-bitwarden@1.0.6
 executors:
   local-machine:
     machine: true
@@ -14,6 +18,7 @@ jobs:
     steps:
       - checkout
 
+      # This step is only needed because we run locally
       - run:
           name: Wipe Bitwarden CLI config and sessions
           command: |
@@ -52,33 +57,20 @@ jobs:
             echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
 
-      - run:
-          name: Remove leftover venv
-          command: rm -rf .venv
+      - pulumi/login
+
+      - python/install-packages:
+          pkg-manager: uv
 
       - run:
-          name: Create venv and install with uv
+          name: Install packages
           command: |
-            python3 -m venv .venv
+            uv venv
+            uv add -r requirements.txt
             source .venv/bin/activate
-            uv pip install -r requirements.txt
-            which python3
-            python3 -m pip show pulumi || echo "Pulumi not found"
-            echo "PULUMI_PYTHON_CMD=$(pwd)/.venv/bin/python" >> $BASH_ENV
 
-      - run:
-          name: Show Python used by Pulumi
-          command: |
-            source $BASH_ENV
-            echo "PULUMI_PYTHON_CMD=$PULUMI_PYTHON_CMD"
-            $PULUMI_PYTHON_CMD -m pip show pulumi || echo "Pulumi not found"
-            
-      - run:
-          name: Select Pulumi stack and preview
-          command: |
-            source $BASH_ENV
-            pulumi stack select "$PULUMI_STACK"
-            pulumi preview
+      - pulumi/preview:
+          stack: "${PULUMI_STACK}"    
           
 workflows:
   preview:
