@@ -34,12 +34,12 @@ jobs:
             echo "Logging into Bitwarden..."
             bw login --apikey
             
+            echo "BW_SESSION is: $BW_SESSION"
             echo "Unlock BW session"
             export BW_SESSION=$(bw unlock $BW_PASSWORD --raw)
-            echo "export BW_SESSION=$BW_SESSION" >> $BASH_ENV
+            echo "BW_SESSION is: $BW_SESSION"
 
             echo "Get GitHub Secrets from Vault"
-
             ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
             export GITHUB_TOKEN=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-token") | .value')
             export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
