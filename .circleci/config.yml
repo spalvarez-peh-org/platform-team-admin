@@ -34,10 +34,8 @@ jobs:
             echo "Logging into Bitwarden..."
             bw login --apikey
             
-            echo "BW_SESSION is: $BW_SESSION"
             echo "Unlock BW session"
             BW_SESSION=$(bw unlock ${BW_PASSWORD} --raw)
-            echo "BW_SESSION is: $BW_SESSION"
 
             echo "Get GitHub Secrets from Vault"
             ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
