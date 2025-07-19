@@ -62,13 +62,14 @@ set +o allexport
 : "${BW_CLIENTSECRET:?BW_CLIENTSECRET must be set}"
 : "${BW_PASSWORD:?BW_PASSWORD must be set}"
 
-if bw status | grep -q '"status": "unlocked"'; then
-  echo "🔒 Bitwarden already unlocked. Logging out to start fresh..."
-  bw logout
-fi
+echo "Cleaning up old Bitwarden CLI session"
+bw lock || echo "Vault already locked"
+bw logout || echo "No active session"
+rm -rf ~/Library/Application\ Support/Bitwarden\ CLI/
+export BW_SESSION=""
 
 echo "Logging into Bitwarden..."
-bw login --apikey -quiet
+bw login --apikey
 
 echo "Unlocking vault..."
 BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)

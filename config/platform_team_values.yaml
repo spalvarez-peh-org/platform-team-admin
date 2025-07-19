@@ -1,5 +1,9 @@
 github_organization_members:
   # Platform Team Members
+  - name: Ajay Chankramath
+    github-role: admin
+    github-username: achankra
+    email: platformetrics@gmail.com
   - name: Platform Team
     github-role: member
     github-username: salvarez-platformteam
