@@ -62,6 +62,81 @@ commands:
             uv sync
             uv sync --group lint
             uv run ruff check . 
+  
+  type-checking:
+    description: Run static type checking with mypy
+    steps:
+      - run:
+          name: Type check with mypy
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group lint
+            uv run mypy __main__.py modules/ --explicit-package-bases --ignore-missing-imports --show-error-codes
+  
+  security-scan:
+    description: Run security analysis with bandit
+    steps:
+      - run:
+          name: Security scan with bandit
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group lint
+            uv run bandit -r __main__.py modules/ -f json -o bandit-report.json || true
+            uv run bandit -r __main__.py modules/ -ll
+  
+  format-check:
+    description: Check code formatting and import sorting
+    steps:
+      - run:
+          name: Check code formatting with black
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group lint
+            uv run black --check --diff __main__.py modules/ test/
+      - run:
+          name: Check import sorting with isort
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group lint
+            uv run isort --check-only --diff __main__.py modules/ test/
+  
+  run-unit-tests:
+    description: Run all unit tests in the project
+    steps:
+      - run:
+          name: Run unit tests
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group test
+            uv run pytest test/ -v --tb=short
+  
+  verify-code-coverage:
+    description: Verify code coverage meets requirements
+    steps:
+      - run:
+          name: Run tests with coverage analysis
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group test
+            uv run pytest test/ --cov=modules --cov-report=term --cov-report=html --cov-fail-under=90
+      - run:
+          name: Display coverage report
+          command: |
+            echo "Coverage report generated in htmlcov/ directory"
+            uv run coverage report --show-missing
+  
   load-pulumi-environment:
     description: Load Pulumi dependencies
     steps:
@@ -89,6 +164,11 @@ jobs:
     steps:
       - checkout
       - static-analysis
+      - type-checking
+      - security-scan
+      - format-check
+      - run-unit-tests
+      - verify-code-coverage
       - load-environment-vars   
       - load-pulumi-environment
       - pulumi/preview:
@@ -106,6 +186,11 @@ jobs:
     steps:
       - checkout
       - static-analysis
+      - type-checking
+      - security-scan
+      - format-check
+      - run-unit-tests
+      - verify-code-coverage
       - load-environment-vars   
       - load-pulumi-environment
       - pulumi/update:
