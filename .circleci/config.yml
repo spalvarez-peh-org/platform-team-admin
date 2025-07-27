@@ -35,19 +35,48 @@ commands:
           command: |
             export BITWARDENCLI_APPDATA_DIR="/tmp/bitwarden-session-$$"
 
+            echo "Cleaning up any existing Bitwarden sessions..."
+            bw lock || echo "Vault already locked"
+            bw logout || echo "No active session"
+            rm -rf ~/Library/Application\ Support/Bitwarden\ CLI/ || true
+            export BW_SESSION=""
+
             echo "Logging into Bitwarden..."
             bw login --apikey
             
-            echo "Unlock BW session"
-            BW_SESSION=$(bw unlock ${BW_PASSWORD} --raw)
+            echo "Unlock BW session using passwordenv"
+            BW_SESSION=$(bw unlock --passwordenv BW_PASSWORD --raw)
+            
+            if [ -z "$BW_SESSION" ]; then
+              echo "Failed to unlock Bitwarden vault"
+              exit 1
+            fi
 
             echo "Get GitHub Secrets from Vault"
             ITEM_JSON=$(bw get item "GitHub Secrets" --session "$BW_SESSION")
+            
+            if [ -z "$ITEM_JSON" ] || [ "$ITEM_JSON" = "null" ]; then
+              echo "Failed to retrieve GitHub Secrets item from Bitwarden"
+              exit 1
+            fi
+            
             export GITHUB_TOKEN=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-token") | .value')
             export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
+            
+            if [ "$GITHUB_TOKEN" = "null" ] || [ -z "$GITHUB_TOKEN" ]; then
+              echo "Failed to extract GitHub token from Bitwarden item"
+              exit 1
+            fi
+            
+            if [ "$GITHUB_OWNER" = "null" ] || [ -z "$GITHUB_OWNER" ]; then
+              echo "Failed to extract GitHub owner from Bitwarden item"
+              exit 1
+            fi
+            
             echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
 
+            echo "Cleaning up Bitwarden session..."
             bw lock
             bw logout
             rm -rf "$BITWARDENCLI_APPDATA_DIR"
