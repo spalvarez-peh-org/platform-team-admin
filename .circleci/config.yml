@@ -28,28 +28,14 @@ executors:
 commands:
 
   setup-uv-environment:
-    description: Setup uv virtual environment with dependencies
-    parameters:
-      dependency_groups:
-        description: Space-separated dependency groups to install (e.g., "lint test")
-        type: string
-        default: ""
+    description: Setup uv virtual environment with all dependencies
     steps:
       - run:
-          name: Setup uv environment
+          name: Setup uv environment with all dependencies
           command: |
             uv venv --clear
             uv add -r requirements.txt
-            uv sync
-            
-            # Install additional dependency groups if specified
-            GROUPS="<< parameters.dependency_groups >>"
-            if [ -n "$GROUPS" ]; then
-              for group in $GROUPS; do
-                echo "Installing dependency group: $group"
-                uv sync --group "$group"
-              done
-            fi
+            uv sync --all-groups
 
   load-environment-vars:
     description: Load environment variables from Bitwarden
@@ -107,8 +93,7 @@ commands:
   static-analysis:
     description: Lint python project
     steps:
-      - setup-uv-environment:
-          dependency_groups: "lint"
+      - setup-uv-environment
       - run:
           name: Lint Python project
           command: |
@@ -117,8 +102,7 @@ commands:
   type-checking:
     description: Run static type checking with mypy
     steps:
-      - setup-uv-environment:
-          dependency_groups: "lint"
+      - setup-uv-environment
       - run:
           name: Type check with mypy
           command: |
@@ -127,8 +111,7 @@ commands:
   security-scan:
     description: Run security analysis with bandit
     steps:
-      - setup-uv-environment:
-          dependency_groups: "lint"
+      - setup-uv-environment
       - run:
           name: Security scan with bandit
           command: |
@@ -138,8 +121,7 @@ commands:
   format-check:
     description: Check code formatting and import sorting
     steps:
-      - setup-uv-environment:
-          dependency_groups: "lint"
+      - setup-uv-environment
       - run:
           name: Check code formatting with black
           command: |
@@ -152,8 +134,7 @@ commands:
   run-unit-tests:
     description: Run all unit tests in the project
     steps:
-      - setup-uv-environment:
-          dependency_groups: "test"
+      - setup-uv-environment
       - run:
           name: Run unit tests
           command: |
@@ -162,8 +143,7 @@ commands:
   verify-code-coverage:
     description: Verify code coverage meets requirements
     steps:
-      - setup-uv-environment:
-          dependency_groups: "test"
+      - setup-uv-environment
       - run:
           name: Run tests with coverage analysis
           command: |
@@ -185,8 +165,7 @@ commands:
   post-deployment-tests:
     description: Run post-deployment validation tests
     steps:
-      - setup-uv-environment:
-          dependency_groups: "test"
+      - setup-uv-environment
       - run:
           name: Infrastructure validation tests
           command: |
