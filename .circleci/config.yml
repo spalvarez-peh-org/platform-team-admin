@@ -48,6 +48,8 @@ commands:
             echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
 
+            bw lock
+            bw logout
             rm -rf "$BITWARDENCLI_APPDATA_DIR"
   static-analysis:
     description: Lint python project
