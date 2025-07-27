@@ -30,22 +30,14 @@ commands:
   load-environment-vars:
     description: Load environment variables from Bitwarden
     steps:
-      # This step is only needed because we run locally
-      - run:
-          name: Wipe Bitwarden CLI config and sessions
-          command: |
-            echo "Cleaning up old Bitwarden CLI session"
-            bw lock || echo "Vault already locked"
-            bw logout || echo "No active session"
-            rm -rf ~/Library/Application\ Support/Bitwarden\ CLI/
-            export BW_SESSION=""
       - run:
           name: Log into Bitwarden using API key
           command: |
             echo "Logging into Bitwarden..."
-            bw login --apikey
+            bw login --apikey --quiet
             
             echo "Unlock BW session"
+            export BITWARDENCLI_APPDATA_DIR="/tmp/bitwarden-session-$$"
             BW_SESSION=$(bw unlock ${BW_PASSWORD} --raw)
 
             echo "Get GitHub Secrets from Vault"
@@ -54,6 +46,9 @@ commands:
             export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
             echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
+
+            rm -rf "$BITWARDENCLI_APPDATA_DIR"
+            unset BW_SESSION
   static-analysis:
     description: Lint python project
     steps:
