@@ -28,10 +28,10 @@ executors:
 commands:
 
   setup-uv-environment:
-    description: Setup uv virtual environment with all dependencies
+    description: Setup cleam uv virtual environment
     steps:
       - run:
-          name: Setup uv environment with all dependencies
+          name: Setup clean uv environment
           command: |
             uv venv --clear
             uv add -r requirements.txt
