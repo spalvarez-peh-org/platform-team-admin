@@ -60,7 +60,7 @@ commands:
       - run:
           name: Lint Python project
           command: |
-            uv venv
+            uv venv --clear
             uv add -r requirements.txt
             uv sync
             uv sync --group lint
@@ -74,7 +74,7 @@ commands:
       - run:
           name: Install packages
           command: |
-            uv venv
+            uv venv --clear
             uv add -r requirements.txt
             uv sync
 
