@@ -3,20 +3,33 @@ version: 2.1
 orbs:
   pulumi: pulumi/pulumi@2.1.0
   python: circleci/python@3.1.0
+
+globals:
+  - &context PLATFORM_ADMIN
+
+on-push-main: &on-push-main
+  branches:
+    only: /main/
+  tags:
+    ignore: /.*/
+
+on-tag-main: &on-tag-main
+  branches:
+    ignore: /.*/
+  tags:
+    only: /.*/
+
 executors:
   local-machine:
     machine: true
     resource_class: peh_runner/local_laptop_runner
     working_directory: ~/project
 
-jobs:
-  pulumi-preview:
-    executor: local-machine
-    environment:
-      PULUMI_STACK: dev
-    steps:
-      - checkout
+commands:
 
+  load-environment-vars:
+    description: Load environment variables from Bitwarden
+    steps:
       # This step is only needed because we run locally
       - run:
           name: Wipe Bitwarden CLI config and sessions
@@ -26,7 +39,6 @@ jobs:
             bw logout || echo "No active session"
             rm -rf ~/Library/Application\ Support/Bitwarden\ CLI/
             export BW_SESSION=""
-
       - run:
           name: Log into Bitwarden using API key
           command: |
@@ -42,24 +54,89 @@ jobs:
             export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulumi-github-owner") | .value')
             echo "export GITHUB_TOKEN=$GITHUB_TOKEN" >> $BASH_ENV
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
-            
+  static-analysis:
+    description: Lint python project
+    steps:
+      - run:
+          name: Lint Python project
+          command: |
+            uv venv
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group lint
+            uv run ruff check . 
+  load-pulumi-environment:
+    description: Load Pulumi dependencies
+    steps:
       - pulumi/login
-
       - python/install-packages:
           pkg-manager: uv
-
       - run:
           name: Install packages
           command: |
             uv venv
             uv add -r requirements.txt
-            source .venv/bin/activate
+            uv sync
 
+jobs:
+  pulumi-preview:
+    description: |
+      Preview Pulumi stack changes
+    executor: local-machine
+    parameters:
+      pulumi_stack:
+        description: Pulumi stack to preview
+        type: string
+    environment:
+      PULUMI_STACK: << parameters.pulumi_stack >>
+    steps:
+      - checkout
+      - static-analysis
+      - load-environment-vars   
+      - load-pulumi-environment
       - pulumi/preview:
-          stack: "${PULUMI_STACK}"    
+          stack: "${PULUMI_STACK}" 
+  pulumi-update:
+    description: |
+      Update Pulumi stack
+    executor: local-machine
+    parameters:
+      pulumi_stack:
+        description: Pulumi stack to update
+        type: string
+    environment:
+      PULUMI_STACK: << parameters.pulumi_stack >>
+    steps:
+      - checkout
+      - static-analysis
+      - load-environment-vars   
+      - load-pulumi-environment
+      - pulumi/update:
+          stack: "${PULUMI_STACK}"
+          skip-preview: false
+
           
 workflows:
   preview:
     jobs:
       - pulumi-preview:
-          context: PLATFORM_ADMIN
+          context: *context
+          pulumi_stack: dev
+          filters: *on-push-main
+  update:
+    jobs:
+      - pulumi-preview:
+          context: *context
+          pulumi_stack: dev
+          filters: *on-tag-main
+      - approve github changes:
+          type: approval
+          requires:
+            - pulumi-preview
+          filters: *on-tag-main
+      - pulumi-update:
+          context: *context
+          pulumi_stack: dev
+          requires:
+            - approve github changes
+          filters: *on-tag-main
