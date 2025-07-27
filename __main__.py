@@ -1,10 +1,10 @@
-import pulumi
 import yaml
 import os
 import pulumi_github as github
 import dotenv
 import modules.github.repos as repos
 import modules.github.rulesets as rulesets
+import modules.github.members as members
 
 dotenv.load_dotenv()
 
@@ -23,21 +23,10 @@ with open("config/platform_team_values.yaml", "r") as f:
     data = yaml.safe_load(f)
 
     #Ensure platform team membership
-    for platform_members in data.get("github_organization_members", []):
-        name = platform_members.get("name")
-        username = platform_members.get("github-username")
-        role = platform_members.get("github-role", "member")
-        email = platform_members.get("email")
-        
-        # Create a GitHub team member
-        team_member = github.Membership(f"github_membership_for_{name}",
-            username = f"{username}",
-            role = f"{role}"
-        )
-
-        # Export the username of the team member
-        pulumi.export(f'{username}-github', team_member.username)
+    for platform_member in data.get("github_organization_members", []):
+        members.addPlatformTeamMember(platform_member)
     
+    #Add Repositories and configuration
     for repositories in data.get("github_repositories", []):
         repo_name = repositories.get("name")
         repo_description = repositories.get("description", "")

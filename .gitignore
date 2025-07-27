@@ -1,7 +1,67 @@
-*.pyc
-.venv/
-.env
-secrets/*.json
+# --- Pulumi ---
+# Stack state files
+*.pulumi.*
+
+# Auto-generated configuration
+Pulumi.*.yaml
+!Pulumi.yaml  # keep the project definition file
+
+# Stack history and checkpoints
+.pulumi/
+
+# Installed SDks
 sdks/
 
-config/circleci_values.yaml
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Rye (if you're using it)
+.rye/
+
+# Poetry
+poetry.lock
+
+# Pipenv
+Pipfile.lock
+
+# MyPy, Pytest, Coverage
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# --- Editors and IDEs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- macOS ---
+.DS_Store
+
+# --- Logs ---
+*.log
+
+# --- Test output ---
+.tox/
+nosetests.xml
+test-results/
+
+# -- Bitwarden Secrets Files ---
+.env
+secrets/*.json
