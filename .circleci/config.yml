@@ -33,11 +33,12 @@ commands:
       - run:
           name: Log into Bitwarden using API key
           command: |
+            export BITWARDENCLI_APPDATA_DIR="/tmp/bitwarden-session-$$"
+
             echo "Logging into Bitwarden..."
-            bw login --apikey --quiet
+            bw login --apikey
             
             echo "Unlock BW session"
-            export BITWARDENCLI_APPDATA_DIR="/tmp/bitwarden-session-$$"
             BW_SESSION=$(bw unlock ${BW_PASSWORD} --raw)
 
             echo "Get GitHub Secrets from Vault"
@@ -48,7 +49,6 @@ commands:
             echo "export GITHUB_OWNER=$GITHUB_OWNER" >> $BASH_ENV
 
             rm -rf "$BITWARDENCLI_APPDATA_DIR"
-            unset BW_SESSION
   static-analysis:
     description: Lint python project
     steps:
