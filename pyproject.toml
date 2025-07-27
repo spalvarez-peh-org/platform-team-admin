@@ -3,11 +3,31 @@ name = "platform-team-admin"
 version = "0.1.0"
 requires-python = ">=3.13"
 dependencies = [
-    "pulumi>=3.0.0,<4.0.0",
-    "pulumi-github>=4.0.0,<5.0.0",
+    "arpeggio==2.0.2",
+    "attrs==25.3.0",
+    "debugpy==1.8.14",
+    "dill==0.4.0",
+    "grpcio==1.66.2",
+    "parver==0.5",
+    "pip==25.1.1",
+    "protobuf==4.25.8",
+    "pulumi==3.181.0",
+    "pulumi-github==4.17.0",
+    "python-dotenv==1.1.1",
+    "pyyaml==6.0.2",
+    "semver==3.0.4",
+    "setuptools==80.9.0",
 ]
 
 [dependency-groups]
 lint = [
     "ruff>=0.12.5",
 ]
+
+[tool.uv.workspace]
+members = [
+    "sdks/bitwarden",
+]
+
+[tool.uv.sources]
+pulumi-bitwarden = { workspace = true }

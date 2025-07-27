@@ -3,6 +3,8 @@ import yaml
 import os
 import pulumi_github as github
 import dotenv
+import modules.github.repos as repos
+import modules.github.rulesets as rulesets
 
 dotenv.load_dotenv()
 
@@ -35,43 +37,16 @@ with open("config/platform_team_values.yaml", "r") as f:
 
         # Export the username of the team member
         pulumi.export(f'{username}-github', team_member.username)
-
-    # Create each repository
-    for repo in data.get("github_repositories", []):
-        name = repo.get("name")
-        description = repo.get("description", "")
+    
+    for repositories in data.get("github_repositories", []):
+        repo_name = repositories.get("name")
+        repo_description = repositories.get("description", "")
         
         # Create a GitHub repository
-        repository = github.Repository(f"{name}", 
-            name=name,
-            description=f"{description}",
-            visibility="private",
-            opts=pulumi.ResourceOptions(protect=True)
+        repository = repos.createRepository(repo_name, repo_description)
+        # Set branch protection rules
+        ruleset = repository.name.apply(lambda name: 
+            rulesets.applyRepositoryRulesets(name, "main")
         )
-
-        # Export the Name of the repository
-        pulumi.export(f'{name}-repository', repository.name)
-
-        # Apply any repository rulesets
-        #ApplyRepositoryRulesets(repository.Name)
-
-# def ApplyRepositoryRulesets(repo_name):
-#     # Create a GitHub repository ruleset
-#     github.RepositoryRuleset(f"{repo_name}-ruleset",
-#         enforcement="active",
-#         rules={
-#             "commit_message_pattern": {
-#                 "operator": "string",
-#                 "pattern": "string",
-#                 "name": "string",
-#                 "negate": False,
-#             },
-#             "tag_name_pattern": {
-#             "operator": "string",
-#             "pattern": "string",
-#             "name": "string",
-#             "negate": False,
-#         },
-#         },
         
-#     )
+
