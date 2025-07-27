@@ -1,0 +1,20 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance", 
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "charliermarsh.ruff",
+        "ms-python.mypy-type-checker",
+        "ms-toolsai.jupyter",
+        "ms-vscode.test-adapter-converter",
+        "littlefoxteam.vscode-python-test-adapter",
+        "github.copilot",
+        "github.copilot-chat",
+        "editorconfig.editorconfig",
+        "ms-vscode.vscode-json"
+    ],
+    "unwantedRecommendations": [
+        "ms-python.pylint"
+    ]
+}

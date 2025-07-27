@@ -1,0 +1,95 @@
+{
+    // Project-specific VS Code settings for consistent development experience
+    // These settings ensure formatting/linting matches our CI pipeline
+    // Personal preferences can override these in your user settings
+    
+    "python.defaultInterpreterPath": "./uv",
+    "python.terminal.activateEnvironment": true,
+    
+    // Editor settings
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    
+    // Python formatting with black
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "uv run black",
+    "python.formatting.blackArgs": [
+        "--line-length=88"
+    ],
+    
+    // Import sorting with isort
+    "python.sortImports.path": "uv run isort",
+    "python.sortImports.args": [
+        "--profile=black",
+        "--line-length=88"
+    ],
+    
+    // Linting with ruff
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+    "python.linting.ruffPath": "uv run ruff",
+    "python.linting.ruffArgs": [
+        "check"
+    ],
+    
+    // Type checking with mypy
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyPath": "uv run mypy",
+    "python.linting.mypyArgs": [
+        "--explicit-package-bases",
+        "--ignore-missing-imports",
+        "--show-error-codes"
+    ],
+    
+    // File associations
+    "files.associations": {
+        "*.py": "python"
+    },
+    
+    // Exclude patterns for file watcher
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/*/**": true,
+        "**/.hg/store/**": true,
+        "**/htmlcov/**": true,
+        "**/__pycache__/**": true,
+        "**/.pytest_cache/**": true,
+        "**/.mypy_cache/**": true,
+        "**/.ruff_cache/**": true,
+        "**/sdks/**": true
+    },
+    
+    // Auto-save configuration (can be overridden by user preferences)
+    "files.autoSave": "onFocusChange",
+    
+    // Python-specific editor settings
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "ms-python.python"
+    },
+    
+    // Testing configuration
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestPath": "uv run pytest",
+    "python.testing.pytestArgs": [
+        "test/"
+    ],
+    "python.testing.autoTestDiscoverOnSaveEnabled": true,
+    
+    // Terminal settings
+    "terminal.integrated.env.osx": {
+        "PYTHONPATH": "${workspaceFolder}"
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "${workspaceFolder}"
+    },
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}"
+    }
+}
