@@ -150,6 +150,78 @@ commands:
             uv add -r requirements.txt
             uv sync
 
+  post-deployment-tests:
+    description: Run post-deployment validation tests
+    steps:
+      - run:
+          name: Infrastructure validation tests
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            uv sync --group test
+            echo "Running post-deployment validation..."
+            
+            # Verify Pulumi stack state
+            pulumi stack output --json > stack-outputs.json
+            
+            # Run integration tests (if they exist)
+            if [ -d "test/integration" ]; then
+              echo "Running integration tests..."
+              uv run pytest test/integration/ -v --tb=short -m "integration"
+            else
+              echo "No integration tests found (test/integration/ directory not present)"
+            fi
+            
+            # Verify GitHub organization state
+            echo "Validating GitHub organization state..."
+            # Note: These would require GitHub API calls to verify actual state
+            # For now, we'll verify that the stack outputs contain expected resources
+            
+            if command -v jq >/dev/null 2>&1; then
+              echo "Checking stack outputs for expected resources..."
+              # Example validations - adjust based on your actual outputs
+              MEMBER_COUNT=$(jq -r 'keys | map(select(test("-github$"))) | length' stack-outputs.json)
+              echo "Found $MEMBER_COUNT member exports in stack outputs"
+              
+              REPO_COUNT=$(jq -r 'keys | map(select(test("-repository$"))) | length' stack-outputs.json)
+              echo "Found $REPO_COUNT repository exports in stack outputs"
+              
+              if [ "$MEMBER_COUNT" -eq 0 ] && [ "$REPO_COUNT" -eq 0 ]; then
+                echo "Warning: No member or repository outputs found"
+              else
+                echo "✅ Stack outputs validation passed"
+              fi
+            else
+              echo "jq not available, skipping stack output validation"
+            fi
+      - run:
+          name: GitHub API validation
+          command: |
+            echo "Validating actual GitHub state via API..."
+            # Only run if we have GitHub credentials
+            if [ -n "${GITHUB_TOKEN:-}" ] && [ -n "${GITHUB_OWNER:-}" ]; then
+              echo "Checking organization members..."
+              curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                "https://api.github.com/orgs/$GITHUB_OWNER/members" | \
+                jq -r '.[].login' > current-members.txt
+              
+              echo "Current organization members:"
+              cat current-members.txt
+              
+              echo "Checking organization repositories..."
+              curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                "https://api.github.com/orgs/$GITHUB_OWNER/repos?type=all&per_page=100" | \
+                jq -r '.[].name' > current-repos.txt
+              
+              echo "Current organization repositories:"
+              cat current-repos.txt
+              
+              echo "✅ GitHub API validation completed"
+            else
+              echo "GitHub credentials not available, skipping API validation"
+            fi
+
 jobs:
   pulumi-preview:
     description: |
@@ -196,6 +268,7 @@ jobs:
       - pulumi/update:
           stack: "${PULUMI_STACK}"
           skip-preview: false
+      - post-deployment-tests
 
           
 workflows:

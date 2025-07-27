@@ -6,6 +6,8 @@ VERBOSE=false
 ACTION="up"
 #Default stack
 PULUMI_STACK="dev"
+# Default: run quality checks
+SKIP_QUALITY_CHECKS=false
 
 #parse optional flags
 while [[ $# -gt 0 ]]; do
@@ -22,8 +24,23 @@ while [[ $# -gt 0 ]]; do
       VERBOSE=true
       shift
       ;;
+    --skip-quality-checks)
+      SKIP_QUALITY_CHECKS=true
+      shift
+      ;;
     --help|-h)
-      echo "Usage: $0 [--action up|destroy|preview] [--stack dev|prod] [--verbose]"
+      echo "Usage: $0 [--action up|destroy|preview] [--stack dev|prod] [--verbose] [--skip-quality-checks]"
+      echo ""
+      echo "Options:"
+      echo "  --action              Pulumi action: up, destroy, or preview (default: up)"
+      echo "  --stack               Pulumi stack: dev or prod (default: dev)"
+      echo "  --verbose             Enable verbose output"
+      echo "  --skip-quality-checks Skip static analysis, tests, and quality checks"
+      echo ""
+      echo "This script mimics the CircleCI pipeline locally with environment variables from .env"
+      echo ""
+      echo "After deployment, run post-deployment tests with:"
+      echo "  ./scripts/run-post-deployment-tests.sh"
       exit 0
       ;;
     *)
@@ -44,6 +61,20 @@ for cmd in jq bw pulumi uv; do
     exit 1
   fi
 done
+
+echo "🚀 Starting local deployment pipeline (mimicking CircleCI)..."
+
+# Setup Python environment (matching CircleCI pattern)
+echo "📦 Setting up Python environment..."
+if [[ -d ".venv" ]]; then
+  echo "Clearing existing virtual environment..."
+  rm -rf .venv
+fi
+
+echo "Creating fresh virtual environment..."
+uv venv --clear
+uv add -r requirements.txt
+uv sync --group lint --group test
 
 # Load .env before accessing any env vars
 ENV_FILE=".env"
@@ -87,14 +118,51 @@ export GITHUB_OWNER=$(echo "$ITEM_JSON" | jq -r '.fields[] | select(.name=="pulu
 
 echo "GitHub secrets loaded into environment variables"
 
-if [[ ! -d ".venv" ]]; then
-  echo "Creating virtual environment..."
-  uv venv .venv
+# Quality checks (matching CircleCI pipeline)
+if [[ "$SKIP_QUALITY_CHECKS" == false ]]; then
+  echo ""
+  echo "🔍 Running quality checks (matching CircleCI pipeline)..."
+  
+  echo "1️⃣ Static analysis (ruff)..."
+  uv run ruff check .
+  
+  echo "2️⃣ Type checking (mypy)..."
+  uv run mypy __main__.py modules/ --explicit-package-bases --ignore-missing-imports --show-error-codes
+  
+  echo "3️⃣ Security scanning (bandit)..."
+  uv run bandit -r __main__.py modules/ -ll
+  
+  echo "4️⃣ Format checking (black)..."
+  uv run black --check --diff __main__.py modules/ test/
+  
+  echo "5️⃣ Import sorting (isort)..."
+  uv run isort --check-only --diff __main__.py modules/ test/
+  
+  echo "6️⃣ Unit tests..."
+  uv run pytest test/ -v --tb=short
+  
+  echo "7️⃣ Coverage verification..."
+  uv run pytest test/ --cov=modules --cov-report=term --cov-report=html --cov-fail-under=90
+  
+  echo "✅ All quality checks passed!"
+else
+  echo "⚠️  Skipping quality checks (--skip-quality-checks flag used)"
 fi
 
-source .venv/bin/activate
-uv pip install -r requirements.txt
+echo ""
+echo "🏗️ Preparing Pulumi environment..."
+
+echo "🏗️ Preparing Pulumi environment..."
+
+# Pulumi setup (matching CircleCI load-pulumi-environment)
+pulumi login
+uv venv --clear
+uv add -r requirements.txt
+uv sync
 pulumi stack select $PULUMI_STACK
+
+echo ""
+echo "🚀 Running Pulumi deployment..."
 
 # Run Pulumi with specified action
 case "$ACTION" in
@@ -115,3 +183,13 @@ case "$ACTION" in
     exit 1
     ;;
 esac
+
+echo ""
+echo "🎉 Local deployment pipeline completed successfully!"
+echo "📊 Summary:"
+echo "   Stack: $PULUMI_STACK"
+echo "   Action: $ACTION"
+echo "   Quality checks: $([ "$SKIP_QUALITY_CHECKS" == true ] && echo "SKIPPED" || echo "PASSED")"
+echo ""
+echo "💡 Next step: Run post-deployment validation tests:"
+echo "   ./scripts/run-post-deployment-tests.sh"
