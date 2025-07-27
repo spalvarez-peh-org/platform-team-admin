@@ -27,6 +27,30 @@ executors:
 
 commands:
 
+  setup-uv-environment:
+    description: Setup uv virtual environment with dependencies
+    parameters:
+      dependency_groups:
+        description: Space-separated dependency groups to install (e.g., "lint test")
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: Setup uv environment
+          command: |
+            uv venv --clear
+            uv add -r requirements.txt
+            uv sync
+            
+            # Install additional dependency groups if specified
+            GROUPS="<< parameters.dependency_groups >>"
+            if [ -n "$GROUPS" ]; then
+              for group in $GROUPS; do
+                echo "Installing dependency group: $group"
+                uv sync --group "$group"
+              done
+            fi
+
   load-environment-vars:
     description: Load environment variables from Bitwarden
     steps:
@@ -83,82 +107,66 @@ commands:
   static-analysis:
     description: Lint python project
     steps:
+      - setup-uv-environment:
+          dependency_groups: "lint"
       - run:
           name: Lint Python project
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group lint
             uv run ruff check . 
   
   type-checking:
     description: Run static type checking with mypy
     steps:
+      - setup-uv-environment:
+          dependency_groups: "lint"
       - run:
           name: Type check with mypy
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group lint
             uv run mypy __main__.py modules/ --explicit-package-bases --ignore-missing-imports --show-error-codes
   
   security-scan:
     description: Run security analysis with bandit
     steps:
+      - setup-uv-environment:
+          dependency_groups: "lint"
       - run:
           name: Security scan with bandit
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group lint
             uv run bandit -r __main__.py modules/ -f json -o bandit-report.json || true
             uv run bandit -r __main__.py modules/ -ll
   
   format-check:
     description: Check code formatting and import sorting
     steps:
+      - setup-uv-environment:
+          dependency_groups: "lint"
       - run:
           name: Check code formatting with black
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group lint
             uv run black --check --diff __main__.py modules/ test/
       - run:
           name: Check import sorting with isort
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group lint
             uv run isort --check-only --diff __main__.py modules/ test/
   
   run-unit-tests:
     description: Run all unit tests in the project
     steps:
+      - setup-uv-environment:
+          dependency_groups: "test"
       - run:
           name: Run unit tests
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group test
             uv run pytest test/ -v --tb=short
   
   verify-code-coverage:
     description: Verify code coverage meets requirements
     steps:
+      - setup-uv-environment:
+          dependency_groups: "test"
       - run:
           name: Run tests with coverage analysis
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group test
             uv run pytest test/ --cov=modules --cov-report=term --cov-report=html --cov-fail-under=90
       - run:
           name: Display coverage report
@@ -172,23 +180,16 @@ commands:
       - pulumi/login
       - python/install-packages:
           pkg-manager: uv
-      - run:
-          name: Install packages
-          command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
+      - setup-uv-environment
 
   post-deployment-tests:
     description: Run post-deployment validation tests
     steps:
+      - setup-uv-environment:
+          dependency_groups: "test"
       - run:
           name: Infrastructure validation tests
           command: |
-            uv venv --clear
-            uv add -r requirements.txt
-            uv sync
-            uv sync --group test
             echo "Running post-deployment validation..."
             
             # Verify Pulumi stack state
