@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13"
 
 [manifest]
@@ -348,6 +348,7 @@ dependencies = [
     { name = "pip" },
     { name = "protobuf" },
     { name = "pulumi" },
+    { name = "pulumi-bitwarden" },
     { name = "pulumi-github" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
@@ -383,6 +384,7 @@ requires-dist = [
     { name = "pip", specifier = "==25.1.1" },
     { name = "protobuf", specifier = "==4.25.8" },
     { name = "pulumi", specifier = "==3.181.0" },
+    { name = "pulumi-bitwarden", editable = "sdks/bitwarden" },
     { name = "pulumi-github", specifier = "==4.17.0" },
     { name = "python-dotenv", specifier = "==1.1.1" },
     { name = "pyyaml", specifier = "==6.0.2" },

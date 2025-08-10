@@ -3,17 +3,8 @@
     // These settings ensure formatting/linting matches our CI pipeline
     // Personal preferences can override these in your user settings
     
-    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.defaultInterpreterPath": "./uv",
     "python.terminal.activateEnvironment": true,
-    
-    // Python analysis settings
-    "python.analysis.extraPaths": [
-        ".",
-        "./modules"
-    ],
-    "python.analysis.autoSearchPaths": true,
-    "python.analysis.diagnosticMode": "workspace",
-    "python.analysis.typeCheckingMode": "basic",
     
     // Editor settings
     "editor.formatOnSave": true,

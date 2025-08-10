@@ -63,4 +63,5 @@ test-results/
 
 # -- Bitwarden Secrets Files ---
 .env
-secrets/*.json
+secrets-setup/*.json
+.bitwarden

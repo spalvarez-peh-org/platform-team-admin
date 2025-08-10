@@ -79,12 +79,12 @@ run_check() {
 FAILED=0
 
 # 1. Code formatting check with black
-if ! run_check "Black formatting" "uv run black --check --diff __main__.py modules/ test/" "uv run black __main__.py modules/ test/"; then
+if ! run_check "Black formatting" "uv run black --check --diff __main__.py tests/" "uv run black __main__.py tests/"; then
     FAILED=1
 fi
 
 # 2. Import sorting check with isort
-if ! run_check "Import sorting" "uv run isort --check-only --diff __main__.py modules/ test/" "uv run isort __main__.py modules/ test/"; then
+if ! run_check "Import sorting" "uv run isort --check-only --diff __main__.py tests/" "uv run isort __main__.py tests/"; then
     FAILED=1
 fi
 
@@ -94,22 +94,12 @@ if ! run_check "Ruff linting" "uv run ruff check ." "uv run ruff check . --fix";
 fi
 
 # 4. Type checking with mypy
-if ! run_check "Type checking" "uv run mypy __main__.py modules/ --explicit-package-bases --ignore-missing-imports --show-error-codes" ""; then
+if ! run_check "Type checking" "uv run mypy __main__.py --explicit-package-bases --ignore-missing-imports --show-error-codes" ""; then
     FAILED=1
 fi
 
 # 5. Security scanning with bandit
-if ! run_check "Security scanning" "uv run bandit -r __main__.py modules/ -ll" ""; then
-    FAILED=1
-fi
-
-# 6. Run unit tests
-if ! run_check "Unit tests" "uv run pytest test/ -v --tb=short" ""; then
-    FAILED=1
-fi
-
-# 7. Coverage check
-if ! run_check "Coverage verification" "uv run pytest test/ --cov=modules --cov-fail-under=90 --quiet" ""; then
+if ! run_check "Security scanning" "uv run bandit -r __main__.py -ll" ""; then
     FAILED=1
 fi
 

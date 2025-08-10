@@ -5,3 +5,9 @@ runtime:
   options:
     toolchain: uv
     virtualenv: .venv
+packages:
+  bitwarden:
+    source: terraform-provider
+    version: 0.12.0
+    parameters:
+      - maxlaverse/bitwarden

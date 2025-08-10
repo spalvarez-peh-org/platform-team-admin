@@ -12,6 +12,7 @@ dependencies = [
     "pip==25.1.1",
     "protobuf==4.25.8",
     "pulumi==3.181.0",
+    "pulumi-bitwarden",
     "pulumi-github==4.17.0",
     "python-dotenv==1.1.1",
     "pyyaml==6.0.2",
@@ -47,7 +48,7 @@ pulumi-bitwarden = { workspace = true }
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-ra -q --strict-markers"
-testpaths = ["test"]
+testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
