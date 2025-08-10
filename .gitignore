@@ -9,9 +9,6 @@ Pulumi.*.yaml
 # Stack history and checkpoints
 .pulumi/
 
-# Installed SDks
-sdks/
-
 # --- Python ---
 __pycache__/
 *.py[cod]

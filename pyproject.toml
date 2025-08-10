@@ -142,6 +142,7 @@ skips = ["B101"]  # Skip assert_used test since we use asserts in tests
 [tool.ruff]
 line-length = 88
 target-version = "py313"
+exclude = ["sdks/"]
 
 [tool.ruff.lint]
 select = [

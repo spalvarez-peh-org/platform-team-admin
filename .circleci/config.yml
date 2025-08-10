@@ -37,7 +37,7 @@ commands:
             uv add -r requirements.txt
             uv sync --all-groups
 
-  # load-environment-vars:
+  # unlock-bitwarden:
   #   description: Load environment variables from Bitwarden
   #   steps:
   #     - run:
