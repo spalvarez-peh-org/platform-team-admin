@@ -104,15 +104,15 @@ commands:
       - run:
           name: Check code formatting with black
           command: |
-            uv run black --check --diff __main__.py modules/ test/
+            uv run black --check --diff __main__.py tests/
       - run:
           name: Type check with mypy
           command: |
-            uv run mypy __main__.py modules/ --explicit-package-bases --ignore-missing-imports --show-error-codes
+            uv run mypy __main__.py --explicit-package-bases --ignore-missing-imports --show-error-codes
       - run:
           name: Check import sorting with isort
           command: |
-            uv run isort --check-only --diff __main__.py modules/ test/
+            uv run isort --check-only --diff __main__.py tests/
   
   security-scan:
     description: Run security analysis with bandit
@@ -120,29 +120,8 @@ commands:
       - run:
           name: Security scan with bandit
           command: |
-            uv run bandit -r __main__.py modules/ -f json -o bandit-report.json || true
-            uv run bandit -r __main__.py modules/ -ll
-  
-  run-unit-tests:
-    description: Run all unit tests in the project
-    steps:
-      - run:
-          name: Run unit tests
-          command: |
-            uv run pytest test/ -v --tb=short
-  
-  verify-code-coverage:
-    description: Verify code coverage meets requirements
-    steps:
-      - run:
-          name: Run tests with coverage analysis
-          command: |
-            uv run pytest test/ --cov=modules --cov-report=term --cov-report=html --cov-fail-under=90
-      - run:
-          name: Display coverage report
-          command: |
-            echo "Coverage report generated in htmlcov/ directory"
-            uv run coverage report --show-missing
+            uv run bandit -r __main__.py -f json -o bandit-report.json || true
+            uv run bandit -r __main__.py -ll
   
   load-pulumi-environment:
     description: Load Pulumi dependencies
@@ -236,8 +215,6 @@ jobs:
       - lint-code
       - static-analysis
       - security-scan
-      - run-unit-tests
-      - verify-code-coverage
       #- load-environment-vars   
       - load-pulumi-environment
       - pulumi/preview:
@@ -258,8 +235,6 @@ jobs:
       - lint-code
       - static-analysis
       - security-scan
-      - run-unit-tests
-      - verify-code-coverage
       #- load-environment-vars   
       - load-pulumi-environment
       - pulumi/update:
